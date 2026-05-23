@@ -15,6 +15,8 @@ dependencies:
   google_fonts: ^6.2.1
   genui_agent_repository:
     path: ./packages/genui_agent_repository
+  persistence_data_source:
+    path: ./packages/persistence_data_source
   openui: ^0.0.1-dev.2
   openui_core: ^0.0.1-dev.2
   openui_components: ^0.0.1-dev.2
