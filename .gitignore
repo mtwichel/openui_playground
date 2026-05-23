@@ -2,6 +2,7 @@
 .env
 .env.*
 *.env
+dart_defines.json
 secrets/
 **/secrets.json
 **/*_secret*
