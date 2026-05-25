@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:genui_agent_repository/genui_agent_repository.dart';
 import 'package:genui_playground/agent_theme_editor/agent_theme_defaults.dart';
 import 'package:genui_playground/agent_theme_editor/agent_theme_presentation.dart';
+import 'package:genui_playground/agent_theme_editor/google_font_loader.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 /// Live preview of [theme] using merged Shad theme + Google Font.
@@ -23,6 +23,7 @@ class _AgentThemePreviewCardState extends State<AgentThemePreviewCard> {
   String? _loadedFamily;
   String? _error;
   bool _loading = false;
+  bool _googleFontReady = false;
   int _requestId = 0;
 
   @override
@@ -44,39 +45,40 @@ class _AgentThemePreviewCardState extends State<AgentThemePreviewCard> {
     setState(() {
       _loading = true;
       _error = null;
+      _googleFontReady = false;
     });
-    try {
-      await GoogleFonts.pendingFonts([
-        GoogleFonts.getFont(family),
-      ]);
-      if (!mounted || id != _requestId) return;
-      setState(() {
+
+    final loaded = await GoogleFontLoader.loadFamily(family);
+    if (!mounted || id != _requestId) return;
+
+    setState(() {
+      _loading = false;
+      if (loaded) {
         _loadedFamily = family;
-        _loading = false;
+        _googleFontReady = true;
         _error = null;
-      });
-    } on Exception {
-      if (!mounted || id != _requestId) return;
-      setState(() {
-        _loading = false;
-        _error = "Couldn't load font";
+      } else {
         _loadedFamily = slateLightAgentTheme().fontFamily;
-      });
-    }
+        _googleFontReady = false;
+        _error = "Couldn't load font (using system fallback)";
+      }
+    });
   }
+
+  bool get _useGoogleFont =>
+      _googleFontReady && _loadedFamily == widget.theme.fontFamily;
 
   @override
   Widget build(BuildContext context) {
     final base = ShadTheme.of(context);
     final merged = widget.theme.applyTo(base);
-    final family = _loadedFamily ?? widget.theme.fontFamily;
-    TextStyle textStyle(TextStyle style) {
-      try {
-        return GoogleFonts.getFont(family, textStyle: style);
-      } on Exception {
-        return style;
-      }
-    }
+    final family = widget.theme.fontFamily;
+
+    TextStyle textStyle(TextStyle style) => GoogleFontLoader.apply(
+      family: family,
+      style: style,
+      useGoogleFont: _useGoogleFont,
+    );
 
     return ShadTheme(
       data: merged,
