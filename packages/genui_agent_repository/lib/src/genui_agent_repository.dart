@@ -1,6 +1,5 @@
 import 'package:genui_agent_repository/src/agent_theme.dart';
 import 'package:genui_agent_repository/src/genui_agent.dart';
-import 'package:genui_agent_repository/src/genui_agent_persistence.dart';
 import 'package:openui_core/openui_core.dart';
 import 'package:persistence_data_source/persistence_data_source.dart';
 
@@ -30,11 +29,30 @@ class GenuiAgentRepository {
     required AgentTheme defaultTheme,
   }) async {
     final encoded = await dataSource.read();
-    final agent = agentFromEncoded(
-      encoded: encoded,
-      library: library,
-      defaultTheme: defaultTheme,
-    );
+    late final GenuiAgent agent;
+    if (encoded != null) {
+      try {
+        agent = GenuiAgentMapper.fromJson(encoded).withLibrary(library);
+      } on Object {
+        agent = GenuiAgent(
+          name: '',
+          description: '',
+          instructions: '',
+          theme: defaultTheme,
+          components: library.components,
+          tools: library.tools,
+        );
+      }
+    } else {
+      agent = GenuiAgent(
+        name: '',
+        description: '',
+        instructions: '',
+        theme: defaultTheme,
+        components: library.components,
+        tools: library.tools,
+      );
+    }
     return GenuiAgentRepository._(agent, dataSource);
   }
 
@@ -89,6 +107,6 @@ class GenuiAgentRepository {
   }
 
   void _persist() {
-    _dataSource.write(encodeAgent(_genuiAgent));
+    _dataSource.write(_genuiAgent.toJson());
   }
 }

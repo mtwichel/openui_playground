@@ -32,19 +32,8 @@ void main() {
       expect(restored.library.tools, isEmpty);
     });
 
-    test('encodeAgent matches toJson', () {
-      expect(encodeAgent(agent), agent.toJson());
-    });
-
-    test('returns default agent for invalid JSON', () {
-      final restored = agentFromEncoded(
-        encoded: '{',
-        library: agent.library,
-        defaultTheme: theme,
-      );
-
-      expect(restored.name, '');
-      expect(restored.theme, theme);
+    test('fromJson throws for invalid JSON', () {
+      expect(() => GenuiAgentMapper.fromJson('{'), throwsA(isA<Object>()));
     });
   });
 }
