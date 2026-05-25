@@ -1,6 +1,6 @@
 import 'package:genui_agent_repository/src/agent_theme.dart';
 import 'package:genui_agent_repository/src/genui_agent.dart';
-import 'package:genui_agent_repository/src/genui_agent_snapshot_mapping.dart';
+import 'package:genui_agent_repository/src/genui_agent_persistence.dart';
 import 'package:openui_core/openui_core.dart';
 import 'package:persistence_data_source/persistence_data_source.dart';
 
@@ -49,26 +49,43 @@ class GenuiAgentRepository {
 
   /// Sets the name of the genui agent.
   void setName(String name) {
-    _genuiAgent = _genuiAgent.copyWith(name: name);
+    _genuiAgent = _copyPreservingLibrary(name: name);
     _persist();
   }
 
   /// Sets the description of the genui agent.
   void setDescription(String description) {
-    _genuiAgent = _genuiAgent.copyWith(description: description);
+    _genuiAgent = _copyPreservingLibrary(description: description);
     _persist();
   }
 
   /// Sets the instructions of the genui agent.
   void setInstructions(String instructions) {
-    _genuiAgent = _genuiAgent.copyWith(instructions: instructions);
+    _genuiAgent = _copyPreservingLibrary(instructions: instructions);
     _persist();
   }
 
   /// Sets the visual theme of the genui agent.
   void setTheme(AgentTheme theme) {
-    _genuiAgent = _genuiAgent.copyWith(theme: theme);
+    _genuiAgent = _copyPreservingLibrary(theme: theme);
     _persist();
+  }
+
+  GenuiAgent _copyPreservingLibrary({
+    String? name,
+    String? description,
+    String? instructions,
+    AgentTheme? theme,
+  }) {
+    final library = _genuiAgent.library;
+    return _genuiAgent
+        .copyWith(
+          name: name,
+          description: description,
+          instructions: instructions,
+          theme: theme,
+        )
+        .withLibrary(library);
   }
 
   void _persist() {

@@ -1,5 +1,10 @@
+import 'package:dart_mappable/dart_mappable.dart';
+
+part 'agent_theme.mapper.dart';
+
 /// Visual theme tokens for a GenUI agent (colors + font family).
-class AgentTheme {
+@MappableClass()
+class AgentTheme with AgentThemeMappable {
   /// Creates an [AgentTheme].
   const AgentTheme({
     required this.primaryArgb,
@@ -31,48 +36,4 @@ class AgentTheme {
 
   /// Google Font family name (e.g. `Inter`).
   final String fontFamily;
-
-  /// Returns a copy with the given fields replaced.
-  AgentTheme copyWith({
-    int? primaryArgb,
-    int? onPrimaryArgb,
-    int? backgroundArgb,
-    int? onBackgroundArgb,
-    int? accentArgb,
-    int? onAccentArgb,
-    String? fontFamily,
-  }) {
-    return AgentTheme(
-      primaryArgb: primaryArgb ?? this.primaryArgb,
-      onPrimaryArgb: onPrimaryArgb ?? this.onPrimaryArgb,
-      backgroundArgb: backgroundArgb ?? this.backgroundArgb,
-      onBackgroundArgb: onBackgroundArgb ?? this.onBackgroundArgb,
-      accentArgb: accentArgb ?? this.accentArgb,
-      onAccentArgb: onAccentArgb ?? this.onAccentArgb,
-      fontFamily: fontFamily ?? this.fontFamily,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is AgentTheme &&
-          primaryArgb == other.primaryArgb &&
-          onPrimaryArgb == other.onPrimaryArgb &&
-          backgroundArgb == other.backgroundArgb &&
-          onBackgroundArgb == other.onBackgroundArgb &&
-          accentArgb == other.accentArgb &&
-          onAccentArgb == other.onAccentArgb &&
-          fontFamily == other.fontFamily;
-
-  @override
-  int get hashCode => Object.hash(
-    primaryArgb,
-    onPrimaryArgb,
-    backgroundArgb,
-    onBackgroundArgb,
-    accentArgb,
-    onAccentArgb,
-    fontFamily,
-  );
 }

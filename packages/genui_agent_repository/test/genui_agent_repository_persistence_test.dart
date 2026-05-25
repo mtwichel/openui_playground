@@ -31,7 +31,7 @@ void main() {
     fontFamily: 'Inter',
   );
 
-  const persistedTheme = GenuiAgentThemeSnapshot(
+  const persistedTheme = AgentTheme(
     primaryArgb: 0xFF112233,
     onPrimaryArgb: 0xFFf8fafc,
     backgroundArgb: 0xFFFFFFFF,
@@ -41,7 +41,7 @@ void main() {
     fontFamily: 'Roboto',
   );
 
-  const persistedSnapshot = GenuiAgentSnapshot(
+  final persistedAgent = GenuiAgent(
     name: 'Saved',
     description: 'Desc',
     instructions: 'Inst',
@@ -57,10 +57,10 @@ void main() {
       dataSource = _MockPersistenceDataSource();
     });
 
-    test('hydrates from snapshot', () async {
+    test('hydrates from persisted JSON', () async {
       when(
         () => dataSource.read(),
-      ).thenAnswer((_) async => persistedSnapshot.toJsonString());
+      ).thenAnswer((_) async => persistedAgent.toJson());
 
       final repository = await GenuiAgentRepository.create(
         dataSource: dataSource,
@@ -116,35 +116,29 @@ void main() {
       );
     });
 
-    test('setName writes encoded snapshot', () {
+    test('setName writes agent JSON', () {
       repository.setName('N');
 
       expect(dataSource.writes, hasLength(1));
-      final snapshot = GenuiAgentSnapshot.fromJsonString(
-        dataSource.writes.single,
-      );
-      expect(snapshot?.name, 'N');
+      final restored = GenuiAgentMapper.fromJson(dataSource.writes.single);
+      expect(restored.name, 'N');
     });
 
-    test('setDescription writes encoded snapshot', () {
+    test('setDescription writes agent JSON', () {
       repository.setDescription('D');
 
-      final snapshot = GenuiAgentSnapshot.fromJsonString(
-        dataSource.writes.single,
-      );
-      expect(snapshot?.description, 'D');
+      final restored = GenuiAgentMapper.fromJson(dataSource.writes.single);
+      expect(restored.description, 'D');
     });
 
-    test('setInstructions writes encoded snapshot', () {
+    test('setInstructions writes agent JSON', () {
       repository.setInstructions('I');
 
-      final snapshot = GenuiAgentSnapshot.fromJsonString(
-        dataSource.writes.single,
-      );
-      expect(snapshot?.instructions, 'I');
+      final restored = GenuiAgentMapper.fromJson(dataSource.writes.single);
+      expect(restored.instructions, 'I');
     });
 
-    test('setTheme writes encoded snapshot', () {
+    test('setTheme writes agent JSON', () {
       const updated = AgentTheme(
         primaryArgb: 0xFF112233,
         onPrimaryArgb: 0xFFf8fafc,
@@ -157,10 +151,8 @@ void main() {
 
       repository.setTheme(updated);
 
-      final snapshot = GenuiAgentSnapshot.fromJsonString(
-        dataSource.writes.single,
-      );
-      expect(snapshot?.theme.fontFamily, 'Roboto');
+      final restored = GenuiAgentMapper.fromJson(dataSource.writes.single);
+      expect(restored.theme.fontFamily, 'Roboto');
     });
   });
 
