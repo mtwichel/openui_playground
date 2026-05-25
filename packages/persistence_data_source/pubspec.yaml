@@ -1,5 +1,5 @@
 name: persistence_data_source
-description: Local persistence for GenUI agent snapshots (.genuiagent).
+description: Generic debounced file persistence for string contents.
 version: 0.1.0+1
 publish_to: none
 
@@ -7,7 +7,6 @@ environment:
   sdk: ^3.11.5
 
 dependencies:
-  path: ^1.9.1
 
 dev_dependencies:
   mocktail: ^1.0.5

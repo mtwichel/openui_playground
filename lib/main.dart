@@ -13,7 +13,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final library = standardLibrary();
-  final dataSource = FileGenuiAgentDataSource();
+  final dataSource = FilePersistenceDataSource(
+    file: defaultGenuiAgentPersistenceFile(),
+  );
   final repository = await GenuiAgentRepository.create(
     dataSource: dataSource,
     library: library,

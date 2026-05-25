@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:persistence_data_source/src/genui_agent_theme_snapshot.dart';
+import 'package:genui_agent_repository/src/genui_agent_theme_snapshot.dart';
 
 /// Supported [schemaVersion] for on-disk agent files.
 const int kGenuiAgentSnapshotSchemaVersion = 1;
@@ -31,8 +31,11 @@ class GenuiAgentSnapshot {
   /// Visual theme tokens.
   final GenuiAgentThemeSnapshot theme;
 
-  /// Parses JSON bytes/string into a snapshot, or returns null if invalid.
-  static GenuiAgentSnapshot? fromJsonString(String source) {
+  /// Parses JSON string into a snapshot, or returns null if invalid.
+  static GenuiAgentSnapshot? fromJsonString(String? source) {
+    if (source == null) {
+      return null;
+    }
     try {
       final decoded = jsonDecode(source);
       return fromJson(decoded);

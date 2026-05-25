@@ -1,7 +1,8 @@
 import 'package:genui_agent_repository/src/agent_theme.dart';
 import 'package:genui_agent_repository/src/genui_agent.dart';
+import 'package:genui_agent_repository/src/genui_agent_snapshot.dart';
+import 'package:genui_agent_repository/src/genui_agent_theme_snapshot.dart';
 import 'package:openui_core/openui_core.dart';
-import 'package:persistence_data_source/persistence_data_source.dart';
 
 // OpenUI core types are @experimental in v0.1.
 // ignore_for_file: experimental_member_use
@@ -25,12 +26,16 @@ GenuiAgentSnapshot snapshotFromAgent(GenuiAgent agent) {
   );
 }
 
-/// Builds a [GenuiAgent] from an optional [snapshot] and runtime [library].
-GenuiAgent agentFromSnapshot({
-  required GenuiAgentSnapshot? snapshot,
+/// Encodes [agent] as a JSON string for persistence.
+String encodeAgent(GenuiAgent agent) => snapshotFromAgent(agent).toJsonString();
+
+/// Builds a [GenuiAgent] from optional persisted JSON and runtime [library].
+GenuiAgent agentFromEncoded({
+  required String? encoded,
   required Library<dynamic> library,
   required AgentTheme defaultTheme,
 }) {
+  final snapshot = GenuiAgentSnapshot.fromJsonString(encoded);
   if (snapshot == null) {
     return GenuiAgent(
       name: '',
@@ -46,17 +51,14 @@ GenuiAgent agentFromSnapshot({
     name: snapshot.name,
     description: snapshot.description,
     instructions: snapshot.instructions,
-    theme: agentThemeFromSnapshot(snapshot.theme, defaultTheme),
+    theme: agentThemeFromSnapshot(snapshot.theme),
     components: library.components,
     tools: library.tools,
   );
 }
 
 /// Maps a persisted theme snapshot to [AgentTheme].
-AgentTheme agentThemeFromSnapshot(
-  GenuiAgentThemeSnapshot snapshot,
-  AgentTheme defaultTheme,
-) {
+AgentTheme agentThemeFromSnapshot(GenuiAgentThemeSnapshot snapshot) {
   return AgentTheme(
     primaryArgb: snapshot.primaryArgb,
     onPrimaryArgb: snapshot.onPrimaryArgb,

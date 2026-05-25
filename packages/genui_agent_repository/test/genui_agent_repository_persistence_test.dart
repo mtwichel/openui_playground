@@ -4,16 +4,17 @@ import 'package:openui_core/openui_core.dart';
 import 'package:persistence_data_source/persistence_data_source.dart';
 import 'package:test/test.dart';
 
-class _MockGenuiAgentDataSource extends Mock implements GenuiAgentDataSource {}
+class _MockPersistenceDataSource extends Mock
+    implements PersistenceDataSource {}
 
-class _RecordingGenuiAgentDataSource implements GenuiAgentDataSource {
-  final List<GenuiAgentSnapshot> writes = [];
-
-  @override
-  Future<GenuiAgentSnapshot?> read() async => null;
+class _RecordingPersistenceDataSource implements PersistenceDataSource {
+  final List<String> writes = [];
 
   @override
-  void write(GenuiAgentSnapshot snapshot) => writes.add(snapshot);
+  Future<String?> read() async => null;
+
+  @override
+  void write(String contents) => writes.add(contents);
 
   @override
   Future<void> flush() async {}
@@ -50,14 +51,16 @@ void main() {
   final library = Library<dynamic>(components: const [], tools: const []);
 
   group('GenuiAgentRepository.create', () {
-    late _MockGenuiAgentDataSource dataSource;
+    late _MockPersistenceDataSource dataSource;
 
     setUp(() {
-      dataSource = _MockGenuiAgentDataSource();
+      dataSource = _MockPersistenceDataSource();
     });
 
     test('hydrates from snapshot', () async {
-      when(() => dataSource.read()).thenAnswer((_) async => persistedSnapshot);
+      when(
+        () => dataSource.read(),
+      ).thenAnswer((_) async => persistedSnapshot.toJsonString());
 
       final repository = await GenuiAgentRepository.create(
         dataSource: dataSource,
@@ -81,14 +84,27 @@ void main() {
       expect(repository.genuiAgent.name, '');
       expect(repository.genuiAgent.theme, defaultTheme);
     });
+
+    test('uses defaults when read returns invalid JSON', () async {
+      when(() => dataSource.read()).thenAnswer((_) async => '{');
+
+      final repository = await GenuiAgentRepository.create(
+        dataSource: dataSource,
+        library: library,
+        defaultTheme: defaultTheme,
+      );
+
+      expect(repository.genuiAgent.name, '');
+      expect(repository.genuiAgent.theme, defaultTheme);
+    });
   });
 
   group('GenuiAgentRepository persistence writes', () {
-    late _RecordingGenuiAgentDataSource dataSource;
+    late _RecordingPersistenceDataSource dataSource;
     late GenuiAgentRepository repository;
 
     setUp(() {
-      dataSource = _RecordingGenuiAgentDataSource();
+      dataSource = _RecordingPersistenceDataSource();
       repository = GenuiAgentRepository(
         GenuiAgent(
           name: '',
@@ -100,26 +116,35 @@ void main() {
       );
     });
 
-    test('setName writes snapshot', () {
+    test('setName writes encoded snapshot', () {
       repository.setName('N');
 
       expect(dataSource.writes, hasLength(1));
-      expect(dataSource.writes.single.name, 'N');
+      final snapshot = GenuiAgentSnapshot.fromJsonString(
+        dataSource.writes.single,
+      );
+      expect(snapshot?.name, 'N');
     });
 
-    test('setDescription writes snapshot', () {
+    test('setDescription writes encoded snapshot', () {
       repository.setDescription('D');
 
-      expect(dataSource.writes.single.description, 'D');
+      final snapshot = GenuiAgentSnapshot.fromJsonString(
+        dataSource.writes.single,
+      );
+      expect(snapshot?.description, 'D');
     });
 
-    test('setInstructions writes snapshot', () {
+    test('setInstructions writes encoded snapshot', () {
       repository.setInstructions('I');
 
-      expect(dataSource.writes.single.instructions, 'I');
+      final snapshot = GenuiAgentSnapshot.fromJsonString(
+        dataSource.writes.single,
+      );
+      expect(snapshot?.instructions, 'I');
     });
 
-    test('setTheme writes snapshot', () {
+    test('setTheme writes encoded snapshot', () {
       const updated = AgentTheme(
         primaryArgb: 0xFF112233,
         onPrimaryArgb: 0xFFf8fafc,
@@ -132,13 +157,16 @@ void main() {
 
       repository.setTheme(updated);
 
-      expect(dataSource.writes.single.theme.fontFamily, 'Roboto');
+      final snapshot = GenuiAgentSnapshot.fromJsonString(
+        dataSource.writes.single,
+      );
+      expect(snapshot?.theme.fontFamily, 'Roboto');
     });
   });
 
   group('GenuiAgentRepository flush', () {
     test('delegates to data source', () async {
-      final dataSource = _MockGenuiAgentDataSource();
+      final dataSource = _MockPersistenceDataSource();
       when(() => dataSource.flush()).thenAnswer((_) async {});
 
       final repository = GenuiAgentRepository(

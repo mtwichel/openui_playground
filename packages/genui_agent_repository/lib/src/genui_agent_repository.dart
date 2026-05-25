@@ -1,7 +1,6 @@
 import 'package:genui_agent_repository/src/agent_theme.dart';
 import 'package:genui_agent_repository/src/genui_agent.dart';
 import 'package:genui_agent_repository/src/genui_agent_snapshot_mapping.dart';
-import 'package:genui_agent_repository/src/no_op_genui_agent_data_source.dart';
 import 'package:openui_core/openui_core.dart';
 import 'package:persistence_data_source/persistence_data_source.dart';
 
@@ -15,9 +14,9 @@ class GenuiAgentRepository {
   /// {@macro genui_agent_repository}
   GenuiAgentRepository(
     GenuiAgent genuiAgent, {
-    GenuiAgentDataSource? dataSource,
+    PersistenceDataSource? dataSource,
   }) : _genuiAgent = genuiAgent,
-       _dataSource = dataSource ?? NoOpGenuiAgentDataSource();
+       _dataSource = dataSource ?? const NoOpPersistenceDataSource();
 
   GenuiAgentRepository._(
     this._genuiAgent,
@@ -26,13 +25,13 @@ class GenuiAgentRepository {
 
   /// Loads from [dataSource] and returns a repository backed by that source.
   static Future<GenuiAgentRepository> create({
-    required GenuiAgentDataSource dataSource,
+    required PersistenceDataSource dataSource,
     required Library<dynamic> library,
     required AgentTheme defaultTheme,
   }) async {
-    final snapshot = await dataSource.read();
-    final agent = agentFromSnapshot(
-      snapshot: snapshot,
+    final encoded = await dataSource.read();
+    final agent = agentFromEncoded(
+      encoded: encoded,
       library: library,
       defaultTheme: defaultTheme,
     );
@@ -40,12 +39,12 @@ class GenuiAgentRepository {
   }
 
   GenuiAgent _genuiAgent;
-  final GenuiAgentDataSource _dataSource;
+  final PersistenceDataSource _dataSource;
 
   /// The genui agent.
   GenuiAgent get genuiAgent => _genuiAgent;
 
-  /// Immediately persists any pending snapshot via the data source.
+  /// Immediately persists any pending contents via the data source.
   Future<void> flush() => _dataSource.flush();
 
   /// Sets the name of the genui agent.
@@ -73,6 +72,6 @@ class GenuiAgentRepository {
   }
 
   void _persist() {
-    _dataSource.write(snapshotFromAgent(_genuiAgent));
+    _dataSource.write(encodeAgent(_genuiAgent));
   }
 }

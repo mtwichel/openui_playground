@@ -139,7 +139,7 @@ flutter test
 | `lib/tools/` | Tools list and schemas |
 | `lib/agent_theme_editor/` | Agent theme tab |
 | `packages/genui_agent_repository/` | Agent domain model and repository |
-| `packages/persistence_data_source/` | `.genuiagent` file persistence (debounced) |
+| `packages/persistence_data_source/` | Generic debounced file persistence (strings) |
 
 ## Dependencies
 
