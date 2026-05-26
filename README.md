@@ -11,7 +11,7 @@ Use it to explore the standard OpenUI component library, inspect callable tools,
 - **Tools** — input/output schemas for registered agent tools
 - **Theme** — six agent colors plus a Google Font family, with live preview on the Theme tab
 
-Agent state is held in memory via `genui_agent_repository`. Browsing components, tools, definition, and theme does not require an API key; Gemini is only needed when you run features that call the model (see [Gemini API key](#gemini-api-key)).
+Agent state is managed by `genui_agent_repository` and **auto-saved** to a temp `.genuiagent` JSON file (name, description, instructions, and theme). Browsing components, tools, definition, and theme does not require an API key; Gemini is only needed when you run features that call the model (see [Gemini API key](#gemini-api-key)).
 
 ## Prerequisites
 
@@ -108,9 +108,20 @@ flutter run -d macos --dart-define-from-file=dart_defines.json
 
 The app reads the key via `String.fromEnvironment('GEMINI_API_KEY')` when Gemini-backed features are enabled.
 
+## Agent persistence
+
+Edits on the Definition and Theme tabs are written automatically to:
+
+`{temporaryDirectory}/genui_playground/default.genuiagent`
+
+On launch, the app restores from that file when it exists and is valid. Components and tools always come from the OpenUI standard library at runtime (not stored in the file yet).
+
 ## Tests
 
 ```bash
+# Persistence package
+cd packages/persistence_data_source && dart test
+
 # Repository package
 cd packages/genui_agent_repository && dart test
 
@@ -128,6 +139,7 @@ flutter test
 | `lib/tools/` | Tools list and schemas |
 | `lib/agent_theme_editor/` | Agent theme tab |
 | `packages/genui_agent_repository/` | Agent domain model and repository |
+| `packages/persistence_data_source/` | Generic debounced file persistence (strings) |
 
 ## Dependencies
 

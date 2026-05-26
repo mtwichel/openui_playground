@@ -1,3 +1,7 @@
+# Local planning artifacts (brainstorm / plan skills)
+docs/brainstorm/
+docs/plan/
+
 # Secrets and local config (never commit API keys)
 .env
 .env.*

@@ -2,25 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:genui_agent_repository/genui_agent_repository.dart';
 import 'package:genui_playground/agent_theme_editor/agent_theme_defaults.dart';
+import 'package:genui_playground/app_lifecycle.dart';
 import 'package:genui_playground/shell/shell.dart';
 import 'package:openui_components/openui_components.dart';
+import 'package:persistence_data_source/persistence_data_source.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 /// Runs the app.
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   final library = standardLibrary();
+  final dataSource = FilePersistenceDataSource(
+    file: defaultGenuiAgentPersistenceFile(),
+  );
+  final repository = await GenuiAgentRepository.create(
+    dataSource: dataSource,
+    library: library,
+    defaultTheme: slateLightAgentTheme(),
+  );
+
+  final lifecycleObserver = AgentPersistenceLifecycleObserver(repository);
+  WidgetsBinding.instance.addObserver(lifecycleObserver);
+
   runApp(
-    RepositoryProvider(
-      create: (context) => GenuiAgentRepository(
-        GenuiAgent(
-          name: '',
-          description: '',
-          instructions: '',
-          theme: slateLightAgentTheme(),
-          components: library.components,
-          tools: library.tools,
-        ),
-      ),
+    RepositoryProvider<GenuiAgentRepository>.value(
+      value: repository,
       child: const MainApp(),
     ),
   );
